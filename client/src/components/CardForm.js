@@ -3,40 +3,50 @@ import { Input, Row, Col, Divider, Select, Space, DatePicker, Button } from 'ant
 
 const CardForm = () => {
     const [flip, setFlip] = useState(false),
-        [number, setNumber] = useState(null),
-        [expires, setExpires] = useState(null),
+        [cardData, setCardData] = useState({
+            cardNumber: '',
+            expiresMonth: '',
+            expiresYear: '',
+            cvv: '',
+            amount: ''
+        }),
         numberRef = useRef(),
         expiresRef = useRef()
 
     const numberDefault = '#### #### #### ####'
+    console.log(cardData)
+    const sep = (str) => {
+        var arr = []
 
+        for (var i = 0; i < str.length; i += 4) {
+            arr.push(str.slice(i, i + 4));
+        }
+        return arr.join(' ')
+    }
     useEffect(() => {
-        numberRef.current.innerHTML = number || numberDefault
-        expiresRef.current.innerHTML = expires || 'MM/YYYY'
-    }, [number, expires])
+        numberRef.current.innerHTML = numberDefault
+
+    }, [])
 
     const handleDigits = (target) => {
-        if(/\D/.test(target.value)){
+        if (/\D/.test(target.value)) {
             target.value = target.value.substring(0, target.value.length - 1)
-         }
+        }
     }
 
     const handleNumber = async ({ target }) => {
 
-       handleDigits(target)
- 
+        handleDigits(target)
         if (target.value > 0) {
-            // console.log(numberDefault.substring(target.value.length))
-            setNumber(target.value.split(/d{4}/).join(' '))
-            // if(target.value.length % 4 == 0) {
-               
-            //     // setNumber( target.value.concat( numberDefault.substring(target.value.length), " "))
-            // } else {
-            //     setNumber( target.value.concat( numberDefault.substring(target.value.length)))
-            // }    
+            setCardData({...cardData, [target.name]: target.value })
+            numberRef.current.innerHTML = sep(cardData?.cardNumber) 
+        } else {
+            setCardData({...cardData, [target.value]: '' })
         }
-        console.log(number)
     }
+
+
+
 
     return (
         <div className="form__wrapper">
@@ -48,7 +58,7 @@ const CardForm = () => {
                     <p ref={numberRef} className="card__number"></p>
                     <div className="card__expires">
                         <span>Expires</span>
-                        <div ref={expiresRef} className="card__expires-data"></div>
+                        <div className="card__expires-data">{cardData.expiresMonth || 'MM'}/{cardData.expiresYear || 'YYYY'}</div>
                     </div>
                 </div>
                 <div className="card-item__side back">
@@ -64,61 +74,48 @@ const CardForm = () => {
                 <Divider orientation="left">Card Number</Divider>
                 <Row gutter={16}>
                     <Col span={24}>
-                        <Input 
-                            name='cardNumber' 
-                            maxLength={19} 
+                        <Input
+                            name='cardNumber'
+                            maxLength={16}
                             onInput={handleNumber}
                         />
                     </Col>
                 </Row>
+                <Divider orientation="left">Expires</Divider>
                 <Row gutter={16}>
-                    <Col span={12}>
-                        <Divider orientation="left">Expires</Divider>
-                        <Select
-                            name='mm'
-                            placeholder={'MM'}
-                            style={{ width: 50, marginRight: 10 }}
-                            showArrow={false}
-                            onChange={(e) => { console.log(e) }}
-                        >
-                            <Select.Option value="01">01</Select.Option>
-                            <Select.Option value="02">02</Select.Option>
-                            <Select.Option value="03">03</Select.Option>
-                            <Select.Option value="04">04</Select.Option>
-                            <Select.Option value="05">05</Select.Option>
-                            <Select.Option value="06">06</Select.Option>
-                            <Select.Option value="07">07</Select.Option>
-                            <Select.Option value="08">08</Select.Option>
-                            <Select.Option value="09">09</Select.Option>
-                            <Select.Option value="10">10</Select.Option>
-                            <Select.Option value="11">11</Select.Option>
-                            <Select.Option value="12">12</Select.Option>
-                        </Select>
-
-                        <DatePicker
-                            style={{ width: 100 }}
-                            picker='year'
-                            placeholder={'YYYY'}
-                            suffixIcon={false}
-                            name={'year'}
-                        />
-                    </Col>
-
-                    <Col span={6} offset={5}>
-                        <Divider orientation="left">CVV</Divider>
+                    <Col span={6}>
                         <Input
-                            name='cvv'
-                            style={{ width: 100 }}
-                            maxLength={3}
-                            onFocus={() => { setFlip(true) }}
-                            onBlur={() => { setFlip(false) }}
+                            name='expiresMonth'
+                            maxLength={2}
+                            placeholder="MM"
+                            onInput={handleNumber}
                         />
                     </Col>
+                    <Col span={6}>
+                        <Input
+                            name='expiresYear'
+                            maxLength={4}
+                            placeholder="YYYY"
+                            onInput={handleNumber}
+                        />
+                    </Col>
+                    <Divider orientation="left">CVV</Divider>
+                    <Row gutter={16}>
+                        <Col>
+                            <Input
+                                name='cvv'
+                                style={{ width: 100 }}
+                                maxLength={3}
+                                onFocus={() => { setFlip(true) }}
+                                onBlur={() => { setFlip(false) }}
+                            />
+                        </Col>
+                    </Row>
                 </Row>
+                <Divider orientation="left">Amount</Divider>
                 <Row gutter={16}>
                     <Col span={24}>
-                        <Divider orientation="left">Amount</Divider>
-                        <Input name='amount' />
+                        <Input disabled name='amount' />
                     </Col>
                 </Row>
                 <Row>
