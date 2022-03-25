@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { Input, Row, Col, Divider, Space, Button, Form, notification } from 'antd'
 
+import { sep, handleDigits } from '../utils/utils'
+
 const CardForm = () => {
     const [flip, setFlip] = useState(false),
         [disabledBtn, setDisabledBtn] = useState(true),
@@ -11,7 +13,6 @@ const CardForm = () => {
             cvv: '',
             amount: ''
         }),
-        formRef = useRef(),
         [form] = Form.useForm()
     const inputs = [...document.querySelectorAll('input')]
 
@@ -21,8 +22,6 @@ const CardForm = () => {
     }, [form])
 
     const sendData = async () => {
-        console.log(cardData)
-        console.log('asdasdasd')
         const res = await fetch('/api/form/send', {
             method: 'POST',
             headers: {
@@ -31,40 +30,34 @@ const CardForm = () => {
             body: JSON.stringify({ ...cardData })
         })
 
-        const json = await res.json()
-        if (json?.requestId) {
-            notification.open({
-                message: `RequestId : ${json.requestId}`,
-                description: `Amount : ${json.amount}`
+        if (res.ok) {
+            const json = await res.json()
+            if (json?.requestId) {
+                notification.open({
+                    message: `RequestId : ${json.requestId}`,
+                    description: `Amount : ${json.amount}`
+                })
+                form.resetFields()
+            }
+            if (json?.message) notification.open({
+                message: json.message
             })
-            form.resetFields()
+        } else {
+            notification.open({
+                message: 'Что то пощло не так :('
+            })
         }
-        if (json?.message) notification.open({
-            message: json.message
-        })
-        console.log(res)
-        console.log(json)
+
     }
 
-    const sep = (str) => {
-        var arr = []
+   
 
-        for (var i = 0; i < str.length; i += 4) {
-            arr.push(str.slice(i, i + 4));
-        }
-        return arr.join(' ')
-    }
 
-    const handleDigits = ({ target }) => {
-        if (/\D/.test(target.value)) {
-            target.value = target.value.substring(0, target.value.length - 1)
-            console.log(target.value)
-        }
-    }
 
     const handleInput = async ({ target }) => {
         if (target.value > 0) {
             if (target.name == 'amount') setDisabledBtn(false)
+           
             setCardData({ ...cardData, [target.name]: target.value })
         } else {
             setCardData({ ...cardData, [target.value]: '' })
@@ -111,7 +104,7 @@ const CardForm = () => {
             </div>
 
             <Space direction="vertical" className='form'>
-                <Form ref={formRef} form={form}>
+                <Form form={form}>
                     <Divider orientation="left">Card Number</Divider>
                     <Row gutter={16}>
                         <Col span={24}>
