@@ -3,11 +3,13 @@
 
 .wrapper {
     width: 100vw;
-    height: 100vh;
+    height: auto;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: #eee;
+    overflow-x: hidden;
 }
 
 .form__wrapper {
@@ -126,6 +128,8 @@
                         border: 1px solid rgba(0, 0, 0, 0.281);
                         width: 50px;
                         border-radius: 4px;
+                        color: #666;
+                        padding: 0 10px;
                     }
                 }
             }
