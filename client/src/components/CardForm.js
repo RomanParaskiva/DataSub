@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Input, Row, Col, Divider, Space, Button, Form, notification } from 'antd'
 
-import { sep, handleDigits } from '../utils/utils'
+import { sep, handleDigits, validateYear, validateForm } from '../utils/utils'
 
 const CardForm = () => {
     const [flip, setFlip] = useState(false),
@@ -13,13 +13,21 @@ const CardForm = () => {
             cvv: '',
             amount: ''
         }),
-        [form] = Form.useForm()
+        [form] = Form.useForm(),
+        yearInputRef = useRef(null)
     const inputs = [...document.querySelectorAll('input')]
 
 
     useEffect(() => {
         form.getFieldInstance(['cardNumber']).focus()
     }, [form])
+
+    useEffect(() => {
+        console.log(validateForm(cardData))
+        if(validateForm(cardData)) {
+            setDisabledBtn(false)
+        }
+    }, [cardData])
 
     const sendData = async () => {
         const res = await fetch('/api/form/send', {
@@ -38,26 +46,21 @@ const CardForm = () => {
                     description: `Amount : ${json.amount}`
                 })
                 form.resetFields()
+                setDisabledBtn(true)
             }
             if (json?.message) notification.open({
                 message: json.message
             })
         } else {
             notification.open({
-                message: 'Что то пощло не так :('
+                message: 'Что то пошло не так :('
             })
         }
 
     }
 
-   
-
-
-
     const handleInput = async ({ target }) => {
         if (target.value > 0) {
-            if (target.name == 'amount') setDisabledBtn(false)
-           
             setCardData({ ...cardData, [target.name]: target.value })
         } else {
             setCardData({ ...cardData, [target.value]: '' })
@@ -66,19 +69,28 @@ const CardForm = () => {
             const values = await form.validateFields([target.name])
             if (values[target.name]) {
                 inputs.forEach((input, i) => {
-                    if (input.name == target.name) {
+                    if (input.name == target.name && i < inputs.length - 1) {
                         inputs[i + 1].focus()
                     }
                 })
             }
-
-        } catch (errorInfo) {
-
-        }
-
+        } catch (errorInfo) { console.log(errorInfo) }
     }
 
-
+    const handleYearInput = ({ target }) => {
+        
+        if(target.value.length == 4){
+            
+            if(!validateYear(target.value)){
+                target.classList.add('ant-input-status-error')
+                yearInputRef.current.focus()
+            } else {
+                target.classList.remove('ant-input-status-error')
+                handleInput({ target })
+            }
+        } 
+       
+    }
 
 
     return (
@@ -143,15 +155,16 @@ const CardForm = () => {
                         </Col>
                         <Col span={6}>
                             <Form.Item
-                                name={'expiresYear'}
+                                // name={'expiresYear'}
                                 rules={[{ len: 4 }]}
                             >
                                 <Input
+                                    ref={yearInputRef}
                                     name='expiresYear'
                                     maxLength={4}
                                     placeholder="YYYY"
                                     onInput={handleDigits}
-                                    onChange={handleInput}
+                                    onChange={handleYearInput}
                                 />
                             </Form.Item>
                         </Col>

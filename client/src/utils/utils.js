@@ -1,3 +1,4 @@
+
 export const sep = (str) => {
   let arr = []
   for (var i = 0; i < str.length; i += 4) {
@@ -12,10 +13,7 @@ export const handleDigits = ({ target }) => {
   }
 
   if (target.name === 'expiresMonth' && !validateMonth(target.value)) {
-    console.log(target.value)
     target.value = target.value.length > 1 ? target.value.substring(0, target.value.length - 1) : ''
-
-    console.log(target.value)
   }
 }
 
@@ -27,10 +25,20 @@ const validateMonth = (val) => {
 }
 
 
-const validateYear = () => {
-  const arr = val.split('')
-  if (arr[0] > 3 && arr[0] < 1) return false
-  if (arr[1] !== 1 || arr[1] !== 0 || arr[1] !== 9 ) return false
-  if (arr.length === 4 && +val < 1900 && +val > 2004) return false
+export const validateYear = (val) => {
+  const year = new Date(val).getFullYear()
+  console.log('year', year)
+  if (+year < 1940 || +year > 2016) return false
+  
+  return true
+}
+
+export const validateForm = (cardData) => {
+  console.log(cardData)
+  if(cardData?.cardNumber?.length != 16 ) return false
+  if(cardData?.expiresMonth?.length != 2) return false
+  if(cardData?.expiresYear?.length != 4) return false
+  if(cardData?.cvv?.length != 3) return false
+  if(cardData?.amount?.length == 0) return false
   return true
 }
